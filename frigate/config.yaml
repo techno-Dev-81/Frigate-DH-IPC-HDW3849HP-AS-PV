@@ -1,0 +1,61 @@
+environment_vars:
+  CameraPassword: *****
+  
+go2rtc:
+  streams:
+    drive:
+      - onvif://go2rtc:CameraPassword@192.168.x.1?subtype=MediaProfile00000
+    drive_sub:
+      - onvif://go2rtc:CameraPassword@192.168.x.1?subtype=MediaProfile00001
+    garden:
+      - onvif://go2rtc:CameraPassword@192.168.x.2?subtype=MediaProfile00000
+    garden_sub:
+      - onvif://go2rtc:CameraPassword@192.168.x.2?subtype=MediaProfile00001
+    front:
+      - onvif://go2rtc:CameraPassword@192.168.x.3?subtype=MediaProfile00000
+    front_sub:
+      - onvif://go2rtc:CameraPassword@192.168.x.3?subtype=MediaProfile00001
+    ffmpeg:
+      bin: ffmpeg
+      volume: -af "volume=30dB"
+version: 0.15-1
+
+# FRIGATE CONFIG
+ffmpeg:
+  global_args: -hide_banner -loglevel warning -threads 2
+  input_args: preset-rtsp-restream
+  output_args:
+    detect: -vf scale=1920:1080 -f rawvideo -pix_fmt yuv420p -threads 2
+    record: preset-record-generic-audio-aac
+
+cameras:
+  front:
+    ffmpeg:
+      inputs:
+        - path: rtsp://localhost:8554/front?video&audio=aac
+          roles:
+            - record
+        - path: rtsp://localhost:8554/front_sub?video&audio=aac
+          roles:
+            - detect
+            - audio
+  drive:
+    ffmpeg:
+      inputs:
+        - path: rtsp://localhost:8554/drive?video&audio=aac
+          roles:
+            - record
+        - path: rtsp://localhost:8554/drive_sub?video&audio=aac
+          roles:
+            - detect
+            - audio
+  garden:
+    ffmpeg:
+      inputs:
+        - path: rtsp://localhost:8554/garden?video&audio=aac
+          roles:
+            - record
+        - path: rtsp://localhost:8554/garden_sub?video&audio=aac
+          roles:
+            - detect
+            - audio
